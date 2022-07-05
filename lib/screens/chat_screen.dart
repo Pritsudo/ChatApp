@@ -1,4 +1,6 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:chat_app/widgets/chat/messages.dart';
+import 'package:chat_app/widgets/chat/new_message.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,34 +39,13 @@ class ChatsScreen extends StatelessWidget {
           )
         ],
       ),
-      body: StreamBuilder(
-          stream: firebaseinstance
-              .collection('chat/bcIgAtYMh5FFFcDWnleT/messages')
-              .snapshots(),
-          builder: (ctx,
-              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                  streamSnapshot) {
-            if (streamSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            final documents = streamSnapshot.data!.docs;
-            return ListView.builder(
-              itemBuilder: (ctx, i) => Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(documents[i]['text']),
-              ),
-              itemCount: documents.length,
-            );
-          }),
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            firebaseinstance
-                .collection('chat/bcIgAtYMh5FFFcDWnleT/messages')
-                .add({'text': 'Added'});
-          },
-          child: const Icon(Icons.add)),
+      body: Container(
+        child: Column(children: [
+          Expanded(child: Messages()),
+          NewMessage(),
+        ],),
+      ),
+     
     );
   }
 }
