@@ -1,9 +1,10 @@
 import 'package:chat_app/widgets/auth_form.dart';
 import 'package:flutter/material.dart';
-
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AuthScreen extends StatefulWidget {
   AuthScreen({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _auth = FirebaseAuth.instance;
 
   void _submitAuthForm(String email, String password, String username,
-      bool isLogin, BuildContext ctx) async {
+      File image, bool isLogin, BuildContext ctx) async {
     UserCredential cred;
 
     try {
@@ -31,6 +32,17 @@ class _AuthScreenState extends State<AuthScreen> {
       } else {
         cred = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
+
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_images')
+            .child(cred.user!.uid + '.jpg');
+
+        UploadTask uploadTask = ref.putFile(image);
+      //  final url= ref.getDownloadURL();
+        TaskSnapshot snapshot = await uploadTask;
+        String url = await snapshot.ref.getDownloadURL();
+        print(url);
         await FirebaseFirestore.instance
             .collection('users')
             .doc(cred.user!.uid)
@@ -38,9 +50,9 @@ class _AuthScreenState extends State<AuthScreen> {
           'username': username,
           'email': email,
           'uid': cred.user!.uid,
+          'image_url':url
         });
       }
-      
     } on PlatformException catch (err) {
       var message = ' An error occured , please check your credentails!';
       if (err.message != null) {

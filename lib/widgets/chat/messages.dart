@@ -13,7 +13,7 @@ class Messages extends StatelessWidget {
 
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection('chatss')
+          .collection('chats')
           .orderBy('createdAt', descending: true)
           .snapshots(),
       builder: (ctx,
@@ -30,6 +30,7 @@ class Messages extends StatelessWidget {
                 itemBuilder: (context, index) => MessageBubble(
                     message: chatDocs[index]['text'],
                     userName: chatDocs[index]['username'],
+                    userImage: chatDocs[index]['userImage'],
                     isMe: chatDocs[index]['userId']==userId,
                     key: ValueKey(chatDocs[index].id),
                     ),

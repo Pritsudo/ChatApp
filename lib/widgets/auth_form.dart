@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/pickers/user_image_picker.dart';
+import 'dart:io';
 
 class AuthForm extends StatefulWidget {
   final void Function(String email, String password, String userName,
+  File image,
       bool isLogin, BuildContext ctx) submitFn;
   bool isLoading;
   AuthForm({
@@ -21,15 +23,33 @@ class _AuthFormState extends State<AuthForm> {
   String _userEmail = '';
   String _userName = '';
   String _userPassword = '';
+  File? _userImageFile;
+
+  void _pickedImage(File image) {
+    _userImageFile = image;
+  }
 
   void _trySubmit() {
     FocusScope.of(context).unfocus();
 
     final isValid = _formkey.currentState!.validate();
+    if (_userImageFile == null && !_isLogin) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Please Pick and image'),
+        backgroundColor: Theme.of(context).errorColor,
+      ));
+      return;
+    }
     if (isValid) {
       _formkey.currentState!.save();
-      widget.submitFn(_userEmail.trim(), _userPassword.trim(), _userName.trim(),
-          _isLogin, context);
+      widget.submitFn(
+        _userEmail.trim(),
+        _userPassword.trim(),
+        _userName.trim(),
+        _userImageFile!,
+        _isLogin,
+        context,
+      );
     }
   }
 
@@ -37,16 +57,16 @@ class _AuthFormState extends State<AuthForm> {
   Widget build(BuildContext context) {
     return Center(
       child: Card(
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         child: SingleChildScrollView(
             child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Form(
             key: _formkey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                UserImagePicker(),
+                if (!_isLogin) UserImagePicker(imagePickFn: _pickedImage),
                 TextFormField(
                   key: const ValueKey('email'),
                   validator: (value) {
